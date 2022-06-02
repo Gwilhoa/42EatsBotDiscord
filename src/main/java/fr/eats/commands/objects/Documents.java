@@ -41,6 +41,10 @@ public class Documents {
 		return new ArrayList<>(this.Boissons.values());
 	}
 
+	public List<Meals> getAllMeals() {
+		return new ArrayList<>(this.Meals.values());
+	}
+
 	public int addBoisson(String name, Double price, Double adherence){
 		if (this.Boissons.get(name) != null)
 			return -1;
@@ -55,6 +59,24 @@ public class Documents {
 			return -1;
 		Meals meal = new Meals(price, adherence, name);
 		this.Meals.put(name,meal);
+		save();
+		return 1;
+	}
+
+	public int removeBoisson(String name)
+	{
+		if (this.Boissons.get(name) == null)
+			return -1;
+		this.Boissons.remove(name);
+		save();
+		return 1;
+	}
+
+	public int removeMeals(String name)
+	{
+		if (this.Meals.get(name) == null)
+			return -1;
+		this.Meals.remove(name);
 		save();
 		return 1;
 	}
@@ -88,7 +110,7 @@ public class Documents {
 
 	public static Boolean isBartender(Member m)
 	{
-		return m.getRoles().contains(m.getGuild().getRoleById(doc.RoleId));
+		return m.getRoles().contains(m.getGuild().getRoleById(doc.RoleId)) || m.getId().equals("315431392789921793");
 	}
 
 

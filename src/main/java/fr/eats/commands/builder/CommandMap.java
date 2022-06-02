@@ -16,6 +16,8 @@ package fr.eats.commands.builder;
 import fr.eats.commands.BotDiscord;
 import fr.eats.commands.command.CommandListener;
 import fr.eats.commands.command.HelpCommand;
+import fr.eats.commands.command.addcommand;
+import fr.eats.commands.command.removecommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 
@@ -51,7 +53,7 @@ public final class CommandMap {
 	 */
 	public CommandMap(BotDiscord botDiscord) {
 		this.botDiscord = botDiscord;
-		registerCommands(new CommandListener(botDiscord, this), new HelpCommand(this));
+		registerCommands(new CommandListener(botDiscord, this), new HelpCommand(this), new addcommand(), new removecommand());
 	}
 
 	/**

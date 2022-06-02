@@ -6,7 +6,7 @@
 /*   By: gchatain <gchatain@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/05 11:45:58 by gchatain          #+#    #+#             */
-/*   Updated: 2022/06/02 12:09:20 by                  ###   ########.fr       */
+/*   Updated: 2022/06/02 23:14:38 by                  ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializer;
 import fr.eats.commands.BotDiscord;
 import fr.eats.commands.builder.CommandMap;
-import fr.eats.commands.objects.Boisson;
-import fr.eats.commands.objects.Documents;
-import fr.eats.commands.objects.SelectOptionImpl;
-import fr.eats.commands.objects.activity;
+import fr.eats.commands.objects.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -85,7 +82,7 @@ public class BotListener implements EventListener {
 				msg.getChannel().sendMessage("ta commande a été annulé").queue();
 				msg.delete().queue();
 			}
-			if (event.getSelectedOptions().get(0).getLabel().equals("boisson"))
+			if (event.getSelectedOptions().get(0).getLabel().equals("les boissons"))
 			{
 				ArrayList<SelectOption> options = new ArrayList<>();
 				if (msg.getEmbeds().get(0).getColor().equals(Color.GREEN)) {
@@ -99,8 +96,37 @@ public class BotListener implements EventListener {
 				SelectMenuImpl selectionMenu = new SelectMenuImpl("boisson", "choisissez votre boisson", 1, 1, false, options);
 				msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
 			}
+			if (event.getSelectedOptions().get(0).getLabel().equals("les plats"))
+			{
+				ArrayList<SelectOption> options = new ArrayList<>();
+				if (msg.getEmbeds().get(0).getColor().equals(Color.GREEN)) {
+					for (Meals meal : Documents.doc.getAllMeals())
+						options.add(new SelectOptionImpl(meal.getName() + " : " + meal.getAdherencePrice() + "€", meal.getName()));
+				} else {
+					for (Meals meal : Documents.doc.getAllMeals())
+						options.add(new SelectOptionImpl(meal.getName() + " : " + meal.getPrice() + "€", meal.getName()));
+				}
+				options.add(new SelectOptionImpl("retour", "back"));
+				SelectMenuImpl selectionMenu = new SelectMenuImpl("plat", "choisissez votre plat", 1, 1, false, options);
+				msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
+			}
+			if (event.getSelectedOptions().get(0).getValue().equals("finish"))
+			{
+				MessageEmbed me = msg.getEmbeds().get(0);
+				EmbedBuilder eb = new EmbedBuilder();
+				eb.setColor(Color.red);
+				eb.setDescription(me.getDescription());
+				eb.setTitle("commande de " + me.getAuthor().getName().split(" ")[1]);
+				eb.setAuthor(msg.getPrivateChannel().getUser().getId());
+				if (me.getColor().equals(Color.GREEN))
+					eb.setFooter(me.getFooter().getText() + " (adhérent)");
+				else
+					eb.setFooter(me.getFooter().getText());
+				event.getJDA().getGuildById(Documents.doc.getServId()).getTextChannelById(Documents.doc.getCommandsChannelId()).sendMessageEmbeds(eb.build()).setActionRow(net.dv8tion.jda.api.interactions.components.buttons.Button.primary("finish", "terminé")).queue();
+				msg.delete().queue();
+			}
 		}
-		if (event.getComponent().getId().equals("boisson")) {
+		if (event.getComponent().getId().equals("boisson") || event.getComponent().getId().equals("plat")) {
 			MessageEmbed Me = msg.getEmbeds().get(0);
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setAuthor(Me.getAuthor().getName());
@@ -129,9 +155,9 @@ public class BotListener implements EventListener {
 
 	private void generatePrincipalMenu(Message msg, EmbedBuilder eb) {
 		ArrayList<SelectOption> options = new ArrayList<>();
-		options.add(new SelectOptionImpl("boisson", "boisson list"));
-		options.add(new SelectOptionImpl("nourriture", "meal list"));
-		options.add(new SelectOptionImpl("Menu", "menu list"));
+		options.add(new SelectOptionImpl("les boissons", "boisson list"));
+		options.add(new SelectOptionImpl("les plats", "meal list"));
+		options.add(new SelectOptionImpl("les Menus", "menu list"));
 		options.add(new SelectOptionImpl("fini !", "finish"));
 		options.add(new SelectOptionImpl("annuler", "cancel"));
 		SelectMenuImpl selectionMenu = new SelectMenuImpl("choice", "choisissez ", 1, 1, false, options);
@@ -152,6 +178,12 @@ public class BotListener implements EventListener {
 			eb.setDescription("rien, que voulez vous ?").setFooter("prix : 0€");
 			generatePrincipalMenu(msg, eb);
 			event.deferReply().complete().deleteOriginal().queue();
+		}
+		if (event.getButton().getId().equals("finish")) {
+			MessageEmbed me = msg.getEmbeds().get(0);
+			event.getGuild().getMemberById(me.getAuthor().getName()).getUser().openPrivateChannel().complete().sendMessage("ta commande est prête").queue();
+			EmbedBuilder eb = new EmbedBuilder().setTitle(me.getTitle()).setColor(Color.green).setDescription(me.getDescription()).setFooter("prix : " + me.getFooter().getText() + "€");
+			event.editMessageEmbeds(eb.build()).setActionRow(net.dv8tion.jda.api.interactions.components.buttons.Button.primary("finish", "terminé").asDisabled()).queue();
 		}
 	}
 
