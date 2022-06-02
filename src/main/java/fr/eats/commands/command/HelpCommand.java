@@ -47,7 +47,7 @@ public class HelpCommand {
         if(!user.hasPrivateChannel()) user.openPrivateChannel().complete();
         ((UserImpl)user).getPrivateChannel().sendMessageEmbeds(builder.build()).queue();
 
-        channel.sendMessage(user.getAsMention()+", Tu veux rencontrer les messages d'aides les plus chauds de ta région ? Alors regarde tes DM dès maintenant. ❤️").queue();
+        channel.sendMessage(user.getAsMention()+", regardes tes messages privés").queue();
 
     }
 

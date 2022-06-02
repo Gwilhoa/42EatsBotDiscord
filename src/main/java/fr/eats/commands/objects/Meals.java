@@ -1,31 +1,31 @@
 package fr.eats.commands.objects;
 
 public class Meals {
-	private Integer Price;
-	private Integer AdherencePrice;
+	private Double Price;
+	private Double AdherencePrice;
 	private String name;
 	private boolean available;
 
-	public Meals(Integer price, Integer adherencePrice, String name){
+	public Meals(Double price, Double adherencePrice, String name){
 		Price = price;
 		AdherencePrice = adherencePrice;
 		this.name = name;
 		this.available = true;
 	}
 
-	public Integer getPrice() {
+	public Double getPrice() {
 		return Price;
 	}
 
-	public void setPrice(Integer price) {
+	public void setPrice(Double price) {
 		Price = price;
 	}
 
-	public Integer getAdherencePrice() {
+	public Double getAdherencePrice() {
 		return AdherencePrice;
 	}
 
-	public void setAdherencePrice(Integer adherencePrice) {
+	public void setAdherencePrice(Double adherencePrice) {
 		AdherencePrice = adherencePrice;
 	}
 

@@ -35,6 +35,15 @@ public class Documents {
 		this.Menus = new HashMap<>();
 	}
 
+	public int addBoisson(String name, Double price, Double adherence){
+		if (this.Boissons.get(name) != null)
+			return -1;
+		Boisson boisson = new Boisson(price, adherence, name);
+		this.Boissons.put(name,boisson);
+		save();
+		return 1;
+	}
+
 	public String getServId() {
 		return ServId;
 	}
