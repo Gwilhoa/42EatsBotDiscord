@@ -4,7 +4,9 @@ import com.google.gson.reflect.TypeToken;
 import net.dv8tion.jda.api.entities.Member;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static fr.eats.commands.event.BotListener.gson;
 
@@ -12,7 +14,7 @@ public class Documents {
 	private static final String file = "42Eats/Documents.json";
 	private static final TypeToken<Documents> type = new TypeToken<Documents>() {
 	};
-	public static Documents doc = null;
+	public static Documents doc;
 	private String ServId;
 	private String ChannelAnnounceId;
 	private String CommandsChannelId;
@@ -35,11 +37,24 @@ public class Documents {
 		this.Menus = new HashMap<>();
 	}
 
+	public List<Boisson> getAllboisson() {
+		return new ArrayList<>(this.Boissons.values());
+	}
+
 	public int addBoisson(String name, Double price, Double adherence){
 		if (this.Boissons.get(name) != null)
 			return -1;
 		Boisson boisson = new Boisson(price, adherence, name);
 		this.Boissons.put(name,boisson);
+		save();
+		return 1;
+	}
+
+	public int addMeals(String name, Double price, Double adherence){
+		if (this.Boissons.get(name) != null)
+			return -1;
+		Meals meal = new Meals(price, adherence, name);
+		this.Meals.put(name,meal);
 		save();
 		return 1;
 	}
@@ -92,6 +107,7 @@ public class Documents {
 				e.printStackTrace();
 			}
 		}
+		System.out.println(doc);
 		if (doc == null)
 			doc = new Documents();
 	}
@@ -111,5 +127,15 @@ public class Documents {
 			bw.close();
 		} catch (IOException e) {
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "Documents{" +
+				"ServId='" + ServId + '\'' +
+				", ChannelAnnounceId='" + ChannelAnnounceId + '\'' +
+				", CommandsChannelId='" + CommandsChannelId + '\'' +
+				", RoleId='" + RoleId + '\'' +
+				'}';
 	}
 }
