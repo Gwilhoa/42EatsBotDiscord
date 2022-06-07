@@ -32,7 +32,7 @@ public class addcommand {
 			msg.getChannel().sendMessage("mauvais format : trop ou pas assez d'argument \n>addboisson NOM PRIX PRIX_ADHERENCE").queue();
 	}
 
-	@Command(name = "addmeal", description = "ajouter une boisson", type = Command.ExecutorType.USER)
+	@Command(name = "addmeal", description = "ajouter un plat", type = Command.ExecutorType.USER)
 	private void addmeal(Message msg) {
 		if (!isBartender(msg.getMember()))
 			return;
@@ -50,10 +50,35 @@ public class addcommand {
 				else
 					msg.getChannel().sendMessage("le plat " + name + " est au prix de " + price+ "€ et pour les adhrents "+ adherence + "€").queue();
 			} catch (NumberFormatException e) {
-				msg.getChannel().sendMessage("mauvais format : les prix sont mal définis \n>addboisson NOM PRIX PRIX_ADHERENCE").queue();
+				msg.getChannel().sendMessage("mauvais format : les prix sont mal définis \n>addmeal NOM PRIX PRIX_ADHERENCE").queue();
 			}
 		}
 		else
-			msg.getChannel().sendMessage("mauvais format : trop ou pas assez d'argument \n>addboisson NOM PRIX PRIX_ADHERENCE").queue();
+			msg.getChannel().sendMessage("mauvais format : trop ou pas assez d'argument \n>addmeal NOM PRIX PRIX_ADHERENCE").queue();
+	}
+
+	@Command(name = "addsnack", description = "ajouter un dessert, un snack", type = Command.ExecutorType.USER)
+	private void addsnack(Message msg) {
+		if (!isBartender(msg.getMember()))
+			return;
+		String[] args = msg.getContentRaw().split(" ");
+		String name;
+		Double price;
+		Double adherence;
+		if (args.length == 4) {
+			name = args[1];
+			try {
+				price = Double.parseDouble(args[2]);
+				adherence = Double.parseDouble(args[3]);
+				if (doc.addSnack(name, price, adherence) < 0)
+					msg.getChannel().sendMessage("snack déjà définis").queue();
+				else
+					msg.getChannel().sendMessage("le snack/ dessert " + name + " est au prix de " + price+ "€ et pour les adhrents "+ adherence + "€").queue();
+			} catch (NumberFormatException e) {
+				msg.getChannel().sendMessage("mauvais format : les prix sont mal définis \n>addsnack NOM PRIX PRIX_ADHERENCE").queue();
+			}
+		}
+		else
+			msg.getChannel().sendMessage("mauvais format : trop ou pas assez d'argument \n>addsnack NOM PRIX PRIX_ADHERENCE").queue();
 	}
 }

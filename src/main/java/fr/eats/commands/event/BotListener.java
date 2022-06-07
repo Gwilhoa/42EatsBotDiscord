@@ -110,6 +110,20 @@ public class BotListener implements EventListener {
 				SelectMenuImpl selectionMenu = new SelectMenuImpl("plat", "choisissez votre plat", 1, 1, false, options);
 				msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
 			}
+			if (event.getSelectedOptions().get(0).getLabel().equals("les snacks/desserts"))
+			{
+				ArrayList<SelectOption> options = new ArrayList<>();
+				if (msg.getEmbeds().get(0).getColor().equals(Color.GREEN)) {
+					for (Snack snack : Documents.doc.getAllSnack())
+						options.add(new SelectOptionImpl(snack.getName() + " : " + snack.getAdherencePrice() + "€", snack.getName()));
+				} else {
+					for (Snack snack : Documents.doc.getAllSnack())
+						options.add(new SelectOptionImpl(snack.getName() + " : " + snack.getPrice() + "€", snack.getName()));
+				}
+				options.add(new SelectOptionImpl("retour", "back"));
+				SelectMenuImpl selectionMenu = new SelectMenuImpl("plat", "choisissez votre plat", 1, 1, false, options);
+				msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
+			}
 			if (event.getSelectedOptions().get(0).getValue().equals("finish"))
 			{
 				MessageEmbed me = msg.getEmbeds().get(0);
@@ -123,6 +137,7 @@ public class BotListener implements EventListener {
 				else
 					eb.setFooter(me.getFooter().getText());
 				event.getJDA().getGuildById(Documents.doc.getServId()).getTextChannelById(Documents.doc.getCommandsChannelId()).sendMessageEmbeds(eb.build()).setActionRow(net.dv8tion.jda.api.interactions.components.buttons.Button.primary("finish", "terminé")).queue();
+				msg.getChannel().sendMessage("ta commande est partis en cuisine ! ").queue();
 				msg.delete().queue();
 			}
 		}
@@ -157,6 +172,7 @@ public class BotListener implements EventListener {
 		ArrayList<SelectOption> options = new ArrayList<>();
 		options.add(new SelectOptionImpl("les boissons", "boisson list"));
 		options.add(new SelectOptionImpl("les plats", "meal list"));
+		options.add(new SelectOptionImpl("les snacks/desserts", "snacks list"));
 		options.add(new SelectOptionImpl("les Menus", "menu list"));
 		options.add(new SelectOptionImpl("fini !", "finish"));
 		options.add(new SelectOptionImpl("annuler", "cancel"));

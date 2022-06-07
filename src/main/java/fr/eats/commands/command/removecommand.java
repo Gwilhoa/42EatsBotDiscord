@@ -21,4 +21,13 @@ public class removecommand {
 		else
 			msg.getChannel().sendMessage("le plat "+ msg.getContentRaw().split(" ")[1] +" a bien ete supprimé").queue();
 	}
+
+	@Command(name = "removesnack", description = "supprimer un dessert du catalogue", type = Command.ExecutorType.USER)
+	private void removesnack(Message msg)
+	{
+		if (Documents.doc.removeSnack(msg.getContentRaw().split(" ")[1]) < 0)
+			msg.getChannel().sendMessage("le snack "+ msg.getContentRaw().split(" ")[1] + "n'existe pas").queue();
+		else
+			msg.getChannel().sendMessage("le snack "+ msg.getContentRaw().split(" ")[1] +" a bien ete supprimé").queue();
+	}
 }

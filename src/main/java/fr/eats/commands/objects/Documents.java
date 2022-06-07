@@ -24,9 +24,10 @@ public class Documents {
 	}
 
 	private String RoleId;
-	private HashMap<String, Boisson> Boissons;
-	private HashMap<String, Meals> Meals;
-	private HashMap<String, Menus> Menus;
+	private final HashMap<String, Boisson> Boissons;
+	private final HashMap<String, Meals> Meals;
+	private final HashMap<String, Menus> Menus;
+	private final HashMap<String, Snack> Snacks;
 	public Documents() {
 		this.ServId = "700778044943499265";
 		this.RoleId = "899795349902852126";
@@ -35,6 +36,7 @@ public class Documents {
 		this.Boissons = new HashMap<>();
 		this.Meals = new HashMap<>();
 		this.Menus = new HashMap<>();
+		this.Snacks = new HashMap<>();
 	}
 
 	public List<Boisson> getAllboisson() {
@@ -44,6 +46,8 @@ public class Documents {
 	public List<Meals> getAllMeals() {
 		return new ArrayList<>(this.Meals.values());
 	}
+
+	public List<Snack> getAllSnack() {return new ArrayList<>(this.Snacks.values());}
 
 	public int addBoisson(String name, Double price, Double adherence){
 		if (this.Boissons.get(name) != null)
@@ -55,10 +59,19 @@ public class Documents {
 	}
 
 	public int addMeals(String name, Double price, Double adherence){
-		if (this.Boissons.get(name) != null)
+		if (this.Meals.get(name) != null)
 			return -1;
 		Meals meal = new Meals(price, adherence, name);
 		this.Meals.put(name,meal);
+		save();
+		return 1;
+	}
+
+	public int addSnack(String name, Double price, Double adherence){
+		if (this.Snacks.get(name) != null)
+			return -1;
+		Snack snack = new Snack(price, adherence, name);
+		this.Snacks.put(name,snack);
 		save();
 		return 1;
 	}
@@ -77,6 +90,15 @@ public class Documents {
 		if (this.Meals.get(name) == null)
 			return -1;
 		this.Meals.remove(name);
+		save();
+		return 1;
+	}
+
+	public int removeSnack(String name)
+	{
+		if (this.Snacks.get(name) == null)
+			return -1;
+		this.Snacks.remove(name);
 		save();
 		return 1;
 	}
