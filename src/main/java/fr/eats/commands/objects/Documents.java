@@ -26,8 +26,9 @@ public class Documents {
 	private String RoleId;
 	private final HashMap<String, Boisson> Boissons;
 	private final HashMap<String, Meals> Meals;
-	private final HashMap<String, Menus> Menus;
 	private final HashMap<String, Snack> Snacks;
+	private final ArrayList<String> sauces;
+	private final ArrayList<String> ingredients;
 	public Documents() {
 		this.ServId = "700778044943499265";
 		this.RoleId = "899795349902852126";
@@ -35,8 +36,9 @@ public class Documents {
 		this.CommandsChannelId = null;
 		this.Boissons = new HashMap<>();
 		this.Meals = new HashMap<>();
-		this.Menus = new HashMap<>();
 		this.Snacks = new HashMap<>();
+		this.sauces = new ArrayList<>();
+		this.ingredients = new ArrayList<>();
 	}
 
 	public List<Boisson> getAllboisson() {
@@ -58,10 +60,37 @@ public class Documents {
 		return 1;
 	}
 
-	public int addMeals(String name, Double price, Double adherence){
+	public ArrayList<String> getSauces() {
+		return sauces;
+	}
+
+	public ArrayList<String> getIngredients() {
+		return ingredients;
+	}
+
+	public void addSauces(String str){
+		this.sauces.add(str);
+		save();
+	}
+	public void removeSauces(String str){
+		this.sauces.remove(str);
+		save();
+	}
+
+	public void addIngredients(String str){
+		this.ingredients.add(str);
+		save();
+	}
+
+	public void removeIngredients(String str){
+		this.sauces.add(str);
+		save();
+	}
+
+	public int addMeals(String name, Double price, Double adherence, String isingred){
 		if (this.Meals.get(name) != null)
 			return -1;
-		Meals meal = new Meals(price, adherence, name);
+		Meals meal = new Meals(price, adherence, name, isingred.equals("1"));
 		this.Meals.put(name,meal);
 		save();
 		return 1;

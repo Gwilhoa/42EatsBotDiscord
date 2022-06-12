@@ -3,47 +3,28 @@
   "ChannelAnnounceId": "982032118400036884",
   "CommandsChannelId": "981829722042429480",
   "RoleId": "899795349902852126",
-  "Boissons": {
-    "oasis": {
-      "Price": 4.0,
-      "AdherencePrice": 3.0,
-      "name": "oasis",
+  "Boissons": {},
+  "Meals": {
+    "salade": {
+      "Price": 6.0,
+      "AdherencePrice": 5.0,
+      "name": "salade",
+      "iswithingredient": false,
       "available": true
     },
-    "coca": {
-      "Price": 5.0,
-      "AdherencePrice": 4.0,
-      "name": "coca",
-      "available": true
-    }
-  },
-  "Meals": {
     "wrap": {
       "Price": 6.0,
       "AdherencePrice": 5.0,
       "name": "wrap",
-      "available": true
-    },
-    "panini": {
-      "Price": 5.0,
-      "AdherencePrice": 4.0,
-      "name": "panini",
+      "iswithingredient": true,
       "available": true
     }
   },
-  "Menus": {},
-  "Snacks": {
-    "donut": {
-      "Price": 4.0,
-      "AdherencePrice": 3.0,
-      "name": "donut",
-      "available": true
-    },
-    "brownie": {
-      "Price": 4.5,
-      "AdherencePrice": 3.5,
-      "name": "brownie",
-      "available": true
-    }
-  }
+  "Snacks": {},
+  "sauces": [
+    "truc"
+  ],
+  "ingredients": [
+    "truc"
+  ]
 }

@@ -4,13 +4,19 @@ public class Meals {
 	private Double Price;
 	private Double AdherencePrice;
 	private String name;
+	private boolean iswithingredient;
 	private boolean available;
 
-	public Meals(Double price, Double adherencePrice, String name){
+	public Meals(Double price, Double adherencePrice, String name, boolean iswithingredient){
 		Price = price;
 		AdherencePrice = adherencePrice;
 		this.name = name;
 		this.available = true;
+		this.iswithingredient = iswithingredient;
+	}
+
+	public boolean isIswithingredient() {
+		return iswithingredient;
 	}
 
 	public Double getPrice() {

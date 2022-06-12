@@ -6,7 +6,7 @@
 /*   By: gchatain <gchatain@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/05 11:45:58 by gchatain          #+#    #+#             */
-/*   Updated: 2022/06/02 23:14:38 by                  ###   ########.fr       */
+/*   Updated: 2022/06/12 19:07:54 by                  ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,50 +83,19 @@ public class BotListener implements EventListener {
 				msg.delete().queue();
 			}
 			if (event.getSelectedOptions().get(0).getLabel().equals("les boissons"))
-			{
-				ArrayList<SelectOption> options = new ArrayList<>();
-				if (msg.getEmbeds().get(0).getColor().equals(Color.GREEN)) {
-					for (Boisson boisson : Documents.doc.getAllboisson())
-						options.add(new SelectOptionImpl(boisson.getName() + " : " + boisson.getAdherencePrice() + "€", boisson.getName()));
-				} else {
-					for (Boisson boisson : Documents.doc.getAllboisson())
-						options.add(new SelectOptionImpl(boisson.getName() + " : " + boisson.getPrice() + "€", boisson.getName()));
-				}
-				options.add(new SelectOptionImpl("retour", "back"));
-				SelectMenuImpl selectionMenu = new SelectMenuImpl("boisson", "choisissez votre boisson", 1, 1, false, options);
-				msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
-			}
+				generateBoissons(msg, msg.getEmbeds().get(0).getColor().equals(Color.GREEN));
 			if (event.getSelectedOptions().get(0).getLabel().equals("les plats"))
-			{
-				ArrayList<SelectOption> options = new ArrayList<>();
-				if (msg.getEmbeds().get(0).getColor().equals(Color.GREEN)) {
-					for (Meals meal : Documents.doc.getAllMeals())
-						options.add(new SelectOptionImpl(meal.getName() + " : " + meal.getAdherencePrice() + "€", meal.getName()));
-				} else {
-					for (Meals meal : Documents.doc.getAllMeals())
-						options.add(new SelectOptionImpl(meal.getName() + " : " + meal.getPrice() + "€", meal.getName()));
-				}
-				options.add(new SelectOptionImpl("retour", "back"));
-				SelectMenuImpl selectionMenu = new SelectMenuImpl("plat", "choisissez votre plat", 1, 1, false, options);
-				msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
-			}
+				generatePlats(msg, msg.getEmbeds().get(0).getColor().equals(Color.GREEN));
 			if (event.getSelectedOptions().get(0).getLabel().equals("les snacks/desserts"))
-			{
-				ArrayList<SelectOption> options = new ArrayList<>();
-				if (msg.getEmbeds().get(0).getColor().equals(Color.GREEN)) {
-					for (Snack snack : Documents.doc.getAllSnack())
-						options.add(new SelectOptionImpl(snack.getName() + " : " + snack.getAdherencePrice() + "€", snack.getName()));
-				} else {
-					for (Snack snack : Documents.doc.getAllSnack())
-						options.add(new SelectOptionImpl(snack.getName() + " : " + snack.getPrice() + "€", snack.getName()));
-				}
-				options.add(new SelectOptionImpl("retour", "back"));
-				SelectMenuImpl selectionMenu = new SelectMenuImpl("plat", "choisissez votre plat", 1, 1, false, options);
-				msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
-			}
+				generateDesserts(msg, msg.getEmbeds().get(0).getColor().equals(Color.GREEN));
 			if (event.getSelectedOptions().get(0).getValue().equals("finish"))
 			{
 				MessageEmbed me = msg.getEmbeds().get(0);
+				if (me.getDescription().equals("rien, que voulez vous ?")){
+					msg.getChannel().sendMessage("ta commande a été annulé").queue();
+					msg.delete().queue();
+					return;
+				}
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setColor(Color.red);
 				eb.setDescription(me.getDescription());
@@ -136,50 +105,175 @@ public class BotListener implements EventListener {
 					eb.setFooter(me.getFooter().getText() + " (adhérent)");
 				else
 					eb.setFooter(me.getFooter().getText());
-				event.getJDA().getGuildById(Documents.doc.getServId()).getTextChannelById(Documents.doc.getCommandsChannelId()).sendMessageEmbeds(eb.build()).setActionRow(net.dv8tion.jda.api.interactions.components.buttons.Button.primary("finish", "terminé")).queue();
-				msg.getChannel().sendMessage("ta commande est partis en cuisine ! ").queue();
+				if (isopen) {
+					event.getJDA().getGuildById(Documents.doc.getServId()).getTextChannelById(Documents.doc.getCommandsChannelId()).sendMessageEmbeds(eb.build()).setActionRow(net.dv8tion.jda.api.interactions.components.buttons.Button.primary("finish", "terminé")).queue();
+					msg.getChannel().sendMessage("ta commande est partis en cuisine ! ").queue();
+				} else
+					msg.getChannel().sendMessage("le foyer est fermé").queue();
 				msg.delete().queue();
 			}
 		}
-		if (event.getComponent().getId().equals("boisson") || event.getComponent().getId().equals("plat")) {
-			MessageEmbed Me = msg.getEmbeds().get(0);
-			EmbedBuilder eb = new EmbedBuilder();
-			eb.setAuthor(Me.getAuthor().getName());
-			eb.setTitle(Me.getTitle());
-			eb.setColor(Me.getColor());
-			if (event.getSelectedOptions().get(0).getValue().equals("back"))
-				eb.setDescription(Me.getDescription());
-			else if (Me.getDescription().equals("rien, que voulez vous ?"))
-				eb.setDescription(event.getSelectedOptions().get(0).getLabel());
-			else
-				eb.setDescription(Me.getDescription()).appendDescription("\n").appendDescription(event.getSelectedOptions().get(0).getLabel());
-			String[] list = eb.getDescriptionBuilder().toString().split("\n");
-			Double total = 0.0;
-			try {
-				for (String price : list) {
-					total = total + Double.parseDouble(price.split(" ")[2].replace("€", ""));
+		if (event.getComponent().getId().equals("ingredients")){
+			EmbedBuilder eb = getEmbedByMessage(msg);
+			if (event.getSelectedOptions().get(0).getValue().equals("back")) {
+				if (eb.getDescriptionBuilder().toString().charAt(eb.getDescriptionBuilder().toString().length() - 1) == ':'){
+					String[] list = eb.getDescriptionBuilder().toString().split("\n");
+					int i = 1;
+					eb.setDescription(list[0] + "\n");
+					while (i < list.length - 1) {
+						eb.appendDescription(list[i]).appendDescription("\n");
+						i++;
+					}
+					generatePrincipalMenu(msg, eb);
+				} else {
+					eb.appendDescription("| sauces :");
+					generateSauce(msg, eb);
 				}
-			} catch (NumberFormatException e){
-				total = 0.0;
 			}
-			eb.setFooter(total.toString());
-			generatePrincipalMenu(msg, eb);
+			else {
+				eb.appendDescription(" " + event.getSelectedOptions().get(0).getLabel());
+				generateIngredients(msg, eb);
+			}
+		}
+		if (event.getComponent().getId().equals("sauces")){
+			EmbedBuilder eb = getEmbedByMessage(msg);
+			if (event.getSelectedOptions().get(0).getValue().equals("back")) {
+				if (eb.getDescriptionBuilder().toString().charAt(eb.getDescriptionBuilder().toString().length() - 1) == ':')
+					eb.appendDescription(" sans sauces");
+				generatePrincipalMenu(msg, eb);
+			}
+			else {
+				eb.appendDescription(" " + event.getSelectedOptions().get(0).getLabel());
+				generateSauce(msg, eb);
+			}
+		}
+		if (event.getComponent().getId().equals("boisson") || event.getComponent().getId().equals("snacks")) {
+			EmbedBuilder eb = getEmbedByMessage(msg);
+			if (eb.getDescriptionBuilder().toString().equals("rien, que voulez vous ?") && !event.getSelectedOptions().get(0).getValue().equals("back"))
+				eb.setDescription(event.getSelectedOptions().get(0).getLabel());
+			else if (!event.getSelectedOptions().get(0).getValue().equals("back")) {
+				eb.appendDescription("\n").appendDescription(event.getSelectedOptions().get(0).getLabel());
+				eb.setFooter(calculPrice(eb));
+			}
+			generatePrincipalMenu(msg,eb);
+		}
+		if (event.getComponent().getId().equals("plats")) {
+			EmbedBuilder eb = getEmbedByMessage(msg);
+			if (!event.getSelectedOptions().get(0).getValue().equals("back")) {
+				if (eb.getDescriptionBuilder().toString().equals("rien, que voulez vous ?") && !event.getSelectedOptions().get(0).getValue().equals("back"))
+					eb.setDescription(event.getSelectedOptions().get(0).getLabel());
+				else
+					eb.appendDescription("\n").appendDescription(event.getSelectedOptions().get(0).getLabel());
+				eb.setFooter(calculPrice(eb));
+				for (Meals plat : Documents.doc.getAllMeals()) {
+					if (plat.getName().equals(event.getSelectedOptions().get(0).getLabel().split(" ")[0]) && plat.isIswithingredient()) {
+						eb.appendDescription(" ingredients : ");
+						generateIngredients(msg, eb);
+						event.deferReply().complete().deleteOriginal().queue();
+						return;
+					}
+				}
+			}
+			generatePrincipalMenu(msg,eb);
 		}
 		event.deferReply().complete().deleteOriginal().queue();
 	}
 
+	private String calculPrice(EmbedBuilder eb) {
+		String[] list = eb.getDescriptionBuilder().toString().split("\n");
+		Double total = 0.0;
+		try {
+			for (String price : list) {
+				total = total + Double.parseDouble(price.split(" ")[2].replace("€", ""));
+			}
+		} catch (NumberFormatException e){
+			total = 0.0;
+		}
+		return total.toString();
+	}
+
+	private void generateBoissons(Message msg, boolean isadhérent){
+		ArrayList<SelectOption> options = new ArrayList<>();
+		if (isadhérent) {
+			for (Boisson boisson : Documents.doc.getAllboisson())
+				options.add(new SelectOptionImpl(boisson.getName() + " : " + boisson.getAdherencePrice() + "€", boisson.getName()));
+		} else {
+			for (Boisson boisson : Documents.doc.getAllboisson())
+				options.add(new SelectOptionImpl(boisson.getName() + " : " + boisson.getPrice() + "€", boisson.getName()));
+		}
+		SelectMenuImpl selectionMenu = new SelectMenuImpl("boisson", "choisissez votre boisson", 1, 1, false, options);
+		options.add(new SelectOptionImpl("retour", "back"));
+		msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
+	}
+
+	private void generateDesserts(Message msg, boolean isadhérent){
+		ArrayList<SelectOption> options = new ArrayList<>();
+		if (isadhérent) {
+			for (Snack snack : Documents.doc.getAllSnack())
+				options.add(new SelectOptionImpl(snack.getName() + " : " + snack.getAdherencePrice() + "€", snack.getName()));
+		} else {
+			for (Snack snack : Documents.doc.getAllSnack())
+				options.add(new SelectOptionImpl(snack.getName() + " : " + snack.getPrice() + "€", snack.getName()));
+		}
+		options.add(new SelectOptionImpl("retour", "back"));
+		SelectMenuImpl selectionMenu = new SelectMenuImpl("snacks", "choisissez votre plat", 1, 1, false, options);
+		msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
+	}
+
+	private void generatePlats(Message msg, boolean isadhérent){
+		ArrayList<SelectOption> options = new ArrayList<>();
+		if (isadhérent) {
+			for (Meals meals : Documents.doc.getAllMeals())
+				options.add(new SelectOptionImpl(meals.getName() + " : " + meals.getAdherencePrice() + "€", meals.getName()));
+		} else {
+			for (Meals meals : Documents.doc.getAllMeals())
+				options.add(new SelectOptionImpl(meals.getName() + " : " + meals.getPrice() + "€", meals.getName()));
+		}
+		options.add(new SelectOptionImpl("retour", "back"));
+		SelectMenuImpl selectionMenu = new SelectMenuImpl("plats", "choisissez votre plat", 1, 1, false, options);
+		msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
+	}
+
 	private void generatePrincipalMenu(Message msg, EmbedBuilder eb) {
+		eb.setFooter(calculPrice(eb));
 		ArrayList<SelectOption> options = new ArrayList<>();
 		options.add(new SelectOptionImpl("les boissons", "boisson list"));
 		options.add(new SelectOptionImpl("les plats", "meal list"));
 		options.add(new SelectOptionImpl("les snacks/desserts", "snacks list"));
-		options.add(new SelectOptionImpl("les Menus", "menu list"));
 		options.add(new SelectOptionImpl("fini !", "finish"));
 		options.add(new SelectOptionImpl("annuler", "cancel"));
 		SelectMenuImpl selectionMenu = new SelectMenuImpl("choice", "choisissez ", 1, 1, false, options);
 		msg.editMessageEmbeds(eb.build()).setActionRow(selectionMenu).queue();
 	}
 
+	private void generateIngredients(Message msg, EmbedBuilder eb){
+		ArrayList<SelectOption> options = new ArrayList<>();
+		for (String ingredient : Documents.doc.getIngredients())
+			options.add(new SelectOptionImpl(ingredient, ingredient));
+		options.add(new SelectOptionImpl("c'est tout !", "back"));
+		SelectMenuImpl selectionMenu = new SelectMenuImpl("ingredients", "choisissez ", 1, 1, false, options);
+		msg.editMessageEmbeds(eb.build()).setActionRow(selectionMenu).queue();
+	}
+	private void generateSauce(Message msg, EmbedBuilder eb){
+		ArrayList<SelectOption> options = new ArrayList<>();
+		for (String ingredient : Documents.doc.getSauces())
+			options.add(new SelectOptionImpl(ingredient, ingredient));
+		options.add(new SelectOptionImpl("c'est tout !", "back"));
+		SelectMenuImpl selectionMenu = new SelectMenuImpl("sauces", "choisissez ", 1, 1, false, options);
+		msg.editMessageEmbeds(eb.build()).setActionRow(selectionMenu).queue();
+	}
+
+	private EmbedBuilder getEmbedByMessage(Message msg)
+	{
+		MessageEmbed Me = msg.getEmbeds().get(0);
+		EmbedBuilder eb = new EmbedBuilder();
+		eb.setAuthor(Me.getAuthor().getName());
+		eb.setTitle(Me.getTitle());
+		eb.setColor(Me.getColor());
+		eb.setDescription(Me.getDescription());
+		eb.setFooter(Me.getFooter().getText());
+		return eb;
+	}
 
 	private void onButton(ButtonInteractionEvent event) {
 		Message msg = event.getMessage();
