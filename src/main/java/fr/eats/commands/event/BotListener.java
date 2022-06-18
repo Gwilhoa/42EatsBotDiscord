@@ -6,7 +6,7 @@
 /*   By: gchatain <gchatain@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/05 11:45:58 by gchatain          #+#    #+#             */
-/*   Updated: 2022/06/12 19:07:54 by                  ###   ########.fr       */
+/*   Updated: 2022/06/18 11:04:58 by                  ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,8 +126,8 @@ public class BotListener implements EventListener {
 					}
 					generatePrincipalMenu(msg, eb);
 				} else {
-					eb.appendDescription("| sauces :");
-					generateSauce(msg, eb);
+					eb.appendDescription(" | sauces :");
+					generateSauce(msg, eb, true);
 				}
 			}
 			else {
@@ -144,7 +144,7 @@ public class BotListener implements EventListener {
 			}
 			else {
 				eb.appendDescription(" " + event.getSelectedOptions().get(0).getLabel());
-				generateSauce(msg, eb);
+				generateSauce(msg, eb, false);
 			}
 		}
 		if (event.getComponent().getId().equals("boisson") || event.getComponent().getId().equals("snacks")) {
@@ -201,8 +201,8 @@ public class BotListener implements EventListener {
 			for (Boisson boisson : Documents.doc.getAllboisson())
 				options.add(new SelectOptionImpl(boisson.getName() + " : " + boisson.getPrice() + "€", boisson.getName()));
 		}
-		SelectMenuImpl selectionMenu = new SelectMenuImpl("boisson", "choisissez votre boisson", 1, 1, false, options);
 		options.add(new SelectOptionImpl("retour", "back"));
+		SelectMenuImpl selectionMenu = new SelectMenuImpl("boisson", "choisissez votre boisson", 1, 1, false, options);
 		msg.editMessageComponents(ActionRow.of(selectionMenu)).queue();
 	}
 
@@ -247,18 +247,34 @@ public class BotListener implements EventListener {
 	}
 
 	private void generateIngredients(Message msg, EmbedBuilder eb){
+		String str = eb.getDescriptionBuilder().toString();
+		str = str.split(":")[str.split(":").length - 1];
+		ArrayList<String> ing = new ArrayList<>(Arrays.asList(str.split(" ")));
 		ArrayList<SelectOption> options = new ArrayList<>();
-		for (String ingredient : Documents.doc.getIngredients())
-			options.add(new SelectOptionImpl(ingredient, ingredient));
-		options.add(new SelectOptionImpl("c'est tout !", "back"));
+		for (String ingredient : Documents.doc.getIngredients()) {
+			if (!ing.contains(ingredient))
+				options.add(new SelectOptionImpl(ingredient, ingredient));
+		}
+		if (ing.isEmpty())
+			options.add(new SelectOptionImpl("annuler", "back"));
+		else
+			options.add(new SelectOptionImpl("c'est tout !", "back"));
 		SelectMenuImpl selectionMenu = new SelectMenuImpl("ingredients", "choisissez ", 1, 1, false, options);
 		msg.editMessageEmbeds(eb.build()).setActionRow(selectionMenu).queue();
 	}
-	private void generateSauce(Message msg, EmbedBuilder eb){
+	private void generateSauce(Message msg, EmbedBuilder eb, boolean isfirst) {
+		String str = eb.getDescriptionBuilder().toString();
+		str = str.split(":")[str.split(":").length - 1];
+		ArrayList<String> ing = new ArrayList<>(Arrays.asList(str.split(" ")));
 		ArrayList<SelectOption> options = new ArrayList<>();
-		for (String ingredient : Documents.doc.getSauces())
-			options.add(new SelectOptionImpl(ingredient, ingredient));
-		options.add(new SelectOptionImpl("c'est tout !", "back"));
+		for (String ingredient : Documents.doc.getSauces()){
+			if (!ing.contains(ingredient))
+				options.add(new SelectOptionImpl(ingredient, ingredient));
+		}
+		if (isfirst)
+			options.add(new SelectOptionImpl("sans sauces", "back"));
+		else
+			options.add(new SelectOptionImpl("c'est tout !", "back"));
 		SelectMenuImpl selectionMenu = new SelectMenuImpl("sauces", "choisissez ", 1, 1, false, options);
 		msg.editMessageEmbeds(eb.build()).setActionRow(selectionMenu).queue();
 	}
