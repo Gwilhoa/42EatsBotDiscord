@@ -71,7 +71,7 @@ public class addcommand {
 			try {
 				price = Double.parseDouble(args[2]);
 				adherence = Double.parseDouble(args[3]);
-				if (doc.addSnack(name, price, adherence) < 0)
+				if (!doc.addSnack(name, price, adherence))
 					msg.getChannel().sendMessage("snack déjà définis").queue();
 				else
 					msg.getChannel().sendMessage("le snack/ dessert " + name + " est au prix de " + price+ "€ et pour les adhrents "+ adherence + "€").queue();
@@ -82,26 +82,36 @@ public class addcommand {
 		else
 			msg.getChannel().sendMessage("mauvais format : trop ou pas assez d'argument \n>addsnack NOM PRIX PRIX_ADHERENCE").queue();
 	}
-	@Command(name = "addsauces", description = "ajouter une sauce", type = Command.ExecutorType.USER)
+
+
+	@Command(name = "addsauce", description = "ajouter une sauce", type = Command.ExecutorType.USER)
 	private void addsauces(Message msg)
 	{
 		if(!isBartender(msg.getMember()))
 			return;
 		String[] args = msg.getContentRaw().split(" ");
-		if (args.length == 2)
-			doc.addSauces(args[1]);
+		if (args.length == 2) {
+			if (!doc.addSauces(args[1]))
+				msg.getChannel().sendMessage("déjà ajouté").queue();
+			else
+				msg.getChannel().sendMessage("sauce ajoutés avec succès").queue();
+		}
 		else
 			msg.getChannel().sendMessage(">addsauces NOM").queue();
 	}
 
-	@Command(name = "addingredients", description = "ajouter des ingrédients", type = Command.ExecutorType.USER)
+	@Command(name = "addingredient", description = "ajouter des ingrédients", type = Command.ExecutorType.USER)
 	private void addingredients(Message msg)
 	{
 		if(!isBartender(msg.getMember()))
 			return;
 		String[] args = msg.getContentRaw().split(" ");
-		if (args.length == 2)
-			doc.addIngredients(args[1]);
+		if (args.length == 2) {
+			if (!doc.addIngredients(args[1]))
+				msg.getChannel().sendMessage("déjà ajouté").queue();
+			else
+				msg.getChannel().sendMessage("ingrédient ajoutés avec succès").queue();
+		}
 		else
 			msg.getChannel().sendMessage(">addingredients NOM").queue();
 	}

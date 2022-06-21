@@ -6,7 +6,7 @@
 /*   By: gchatain <gchatain@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/05 11:45:58 by gchatain          #+#    #+#             */
-/*   Updated: 2022/06/18 11:17:11 by                  ###   ########.fr       */
+/*   Updated: 2022/06/21 22:29:02 by                  ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,17 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.interactions.commands.CommandAutoCompleteInteraction;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.internal.interactions.component.SelectMenuImpl;
@@ -71,7 +76,11 @@ public class BotListener implements EventListener {
 		else if (event instanceof MessageReceivedEvent) onMessage((MessageReceivedEvent) event);
 		else if (event instanceof ButtonInteractionEvent) onButton((ButtonInteractionEvent) event);
 		else if (event instanceof SelectMenuInteractionEvent) onMenu((SelectMenuInteractionEvent) event);
+		else if (event instanceof SlashCommandInteraction) onSlash((SlashCommandInteraction) event);
+		else if (event instanceof CommandAutoCompleteInteraction) completeCommand((CommandAutoCompleteInteraction) event);
 	}
+
+
 
 	private void onMenu(SelectMenuInteractionEvent event) {
 		Message msg = event.getMessage();
@@ -180,7 +189,7 @@ public class BotListener implements EventListener {
 
 	private String calculPrice(EmbedBuilder eb) {
 		String[] list = eb.getDescriptionBuilder().toString().split("\n");
-		Double total = 0.0;
+		double total = 0.0;
 		try {
 			for (String price : list) {
 				total = total + Double.parseDouble(price.split(" ")[2].replace("€", ""));
@@ -188,7 +197,7 @@ public class BotListener implements EventListener {
 		} catch (NumberFormatException e){
 			total = 0.0;
 		}
-		return total.toString();
+		return Double.toString(total);
 	}
 
 	private void generateBoissons(Message msg, boolean isadhérent){
@@ -319,7 +328,42 @@ public class BotListener implements EventListener {
 		Documents.load();
 		activity act = new activity("le foyer est fermé !", null, Activity.ActivityType.WATCHING);
 		event.getJDA().getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, act);
+		event.getJDA().getGuilds().get(0).updateCommands().queue();
+		event.getJDA().upsertCommand("addsnack", "ajoute un snack")
+				.addOption(OptionType.STRING,"name", "nom du snack", true)
+				.addOption(OptionType.NUMBER,"prix", "prix du snack", true)
+				.addOption(OptionType.NUMBER, "adhprix", "prix pour les adhérents", true)
+				.queue();
+		event.getJDA().upsertCommand("setannouncechannel", "définir le channel d'annonce")
+				.addOption(OptionType.STRING, "channel", "salon", true, true).queue();
 	}
+
+	private void onSlash(SlashCommandInteraction event) {
+		if (event.getName().equals("addsnack")){
+			Double price = event.getOption("prix").getAsDouble();
+			Double ADHprice = event.getOption("adhprix").getAsDouble();
+			if (Documents.doc.addSnack(event.getOption("name").getAsString(),price, ADHprice))
+				event.reply("le dessert " + event.getOption("name").getAsString()).queue();
+			else
+				event.reply("dessert déja définis").queue();
+		}
+		else if (event.getName().equals("setannouncechannel"))
+		{
+			Documents.doc.setCommandsChannelId(event.getGuild().getTextChannelsByName(event.getOption("channel").getAsString(), false).get(0).getId());
+			Documents.doc.setChannelAnnounceId(event.getGuild().getId());
+			event.reply("channel d'annonce définis avec succès").queue();
+		}
+	}
+
+	private void completeCommand(CommandAutoCompleteInteraction event) {
+		if (event.getOptions().get(0).getName().equals("channel")) {
+			ArrayList<String> ar = new ArrayList<>();
+			for (TextChannel ch : event.getGuild().getTextChannels())
+				ar.add(ch.getName());
+			event.replyChoiceStrings(ar).queue();
+		}
+	}
+
 
 
 	/**

@@ -68,23 +68,35 @@ public class Documents {
 		return ingredients;
 	}
 
-	public void addSauces(String str){
+	public boolean addSauces(String str){
+		if (this.sauces.contains(str))
+			return false;
 		this.sauces.add(str);
 		save();
+		return true;
 	}
-	public void removeSauces(String str){
+	public boolean removeSauces(String str){
+		if (!this.sauces.contains(str))
+			return false;
 		this.sauces.remove(str);
 		save();
+		return true;
 	}
 
-	public void addIngredients(String str){
+	public boolean addIngredients(String str){
+		if (this.ingredients.contains(str))
+			return false;
 		this.ingredients.add(str);
 		save();
+		return true;
 	}
 
-	public void removeIngredients(String str){
+	public boolean removeIngredients(String str){
+		if (!this.sauces.contains(str))
+			return true;
 		this.sauces.add(str);
 		save();
+		return false;
 	}
 
 	public int addMeals(String name, Double price, Double adherence, String isingred){
@@ -96,13 +108,13 @@ public class Documents {
 		return 1;
 	}
 
-	public int addSnack(String name, Double price, Double adherence){
+	public boolean addSnack(String name, Double price, Double adherence){
 		if (this.Snacks.get(name) != null)
-			return -1;
+			return false;
 		Snack snack = new Snack(price, adherence, name);
 		this.Snacks.put(name,snack);
 		save();
-		return 1;
+		return true;
 	}
 
 	public int removeBoisson(String name)

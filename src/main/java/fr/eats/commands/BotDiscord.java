@@ -24,7 +24,7 @@ public class BotDiscord implements Runnable{
 
     private boolean running;
 
-    public BotDiscord(String token) throws LoginException, IllegalArgumentException, RateLimitedException {
+    public BotDiscord(String token) throws LoginException, IllegalArgumentException, RateLimitedException, InterruptedException {
         jda = JDABuilder.create(token, GatewayIntent.getIntents(GatewayIntent.DEFAULT | GatewayIntent.getRaw(GatewayIntent.GUILD_MEMBERS) | GatewayIntent.getRaw(GatewayIntent.GUILD_PRESENCES)))
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
                 .setChunkingFilter(ChunkingFilter.ALL)
@@ -32,7 +32,7 @@ public class BotDiscord implements Runnable{
                 .setLargeThreshold(250)
                 .addEventListeners(
                         new BotListener(commandMap, this)
-                ).build();
+                ).build().awaitReady();
         System.out.println("Bot connected.");
 
     }
@@ -63,7 +63,7 @@ public class BotDiscord implements Runnable{
         try {
             BotDiscord botDiscord = new BotDiscord(args[0]);
             new Thread(botDiscord, "bot").start();
-        } catch (LoginException | IllegalArgumentException | RateLimitedException e) {
+        } catch (LoginException | IllegalArgumentException | RateLimitedException | InterruptedException e) {
             e.printStackTrace();
         }
     }
