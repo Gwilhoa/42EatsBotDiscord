@@ -51,13 +51,13 @@ public class Documents {
 
 	public List<Snack> getAllSnack() {return new ArrayList<>(this.Snacks.values());}
 
-	public int addBoisson(String name, Double price, Double adherence){
+	public boolean addBoisson(String name, Double price, Double adherence){
 		if (this.Boissons.get(name) != null)
-			return -1;
+			return false;
 		Boisson boisson = new Boisson(price, adherence, name);
 		this.Boissons.put(name,boisson);
 		save();
-		return 1;
+		return true;
 	}
 
 	public ArrayList<String> getSauces() {
@@ -99,13 +99,22 @@ public class Documents {
 		return false;
 	}
 
-	public int addMeals(String name, Double price, Double adherence, String isingred){
+	public boolean addMeals(String name, Double price, Double adherence, Boolean isingred){
 		if (this.Meals.get(name) != null)
-			return -1;
+			return false;
+		Meals meal = new Meals(price, adherence, name, isingred);
+		this.Meals.put(name,meal);
+		save();
+		return true;
+	}
+
+	public boolean addMeals(String name, Double price, Double adherence, String isingred){
+		if (this.Meals.get(name) != null)
+			return false;
 		Meals meal = new Meals(price, adherence, name, isingred.equals("1"));
 		this.Meals.put(name,meal);
 		save();
-		return 1;
+		return true;
 	}
 
 	public boolean addSnack(String name, Double price, Double adherence){
@@ -117,31 +126,31 @@ public class Documents {
 		return true;
 	}
 
-	public int removeBoisson(String name)
+	public boolean removeBoisson(String name)
 	{
 		if (this.Boissons.get(name) == null)
-			return -1;
+			return false;
 		this.Boissons.remove(name);
 		save();
-		return 1;
+		return true;
 	}
 
-	public int removeMeals(String name)
+	public boolean removeMeals(String name)
 	{
 		if (this.Meals.get(name) == null)
-			return -1;
+			return false;
 		this.Meals.remove(name);
 		save();
-		return 1;
+		return true;
 	}
 
-	public int removeSnack(String name)
+	public boolean removeSnack(String name)
 	{
 		if (this.Snacks.get(name) == null)
-			return -1;
+			return false;
 		this.Snacks.remove(name);
 		save();
-		return 1;
+		return true;
 	}
 
 	public String getServId() {

@@ -6,7 +6,7 @@
 /*   By: gchatain <gchatain@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/05 11:45:58 by gchatain          #+#    #+#             */
-/*   Updated: 2022/06/22 08:52:28 by                  ###   ########.fr       */
+/*   Updated: 2022/06/22 23:10:00 by                  ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.internal.interactions.component.SelectMenuImpl;
 
+import javax.print.Doc;
 import java.awt.*;
 import java.io.File;
 import java.util.*;
@@ -332,23 +333,6 @@ public class BotListener implements EventListener {
 		Documents.load();
 		activity act = new activity("le foyer est fermé !", null, Activity.ActivityType.WATCHING);
 		event.getJDA().getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, act);
-		event.getJDA().getGuilds().get(0).updateCommands().queue();
-		event.getJDA().upsertCommand("command", "passer commande").queue();
-		event.getJDA().upsertCommand("open", "ouvrir le foyer").queue();
-		event.getJDA().upsertCommand("close", "fermer le foyer").queue();
-		event.getJDA().upsertCommand("addsnack", "ajoute un snack")
-				.addOption(OptionType.STRING,"name", "nom du snack", true)
-				.addOption(OptionType.NUMBER,"prix", "prix du snack", true)
-				.addOption(OptionType.NUMBER, "adhprix", "prix pour les adhérents", true)
-				.queue();
-
-		event.getJDA().upsertCommand("removesnack", "ajoute un snack")
-				.addOption(OptionType.STRING,"name", "nom du snack", true)
-				.queue();
-		event.getJDA().upsertCommand("setannouncechannel", "définir le channel d'annonce")
-				.addOption(OptionType.STRING, "channel", "salon", true, true).queue();
-		event.getJDA().upsertCommand("setcommandschannel", "définir le channel des commqndes")
-				.addOption(OptionType.STRING, "channel", "salon", true, true).queue();
 
 	}
 
@@ -356,24 +340,136 @@ public class BotListener implements EventListener {
 		if (event.getName().equals("command")){
 			CommandListener.command(event.getMember(), event.getTextChannel(), event);
 		}
-		else if (event.getName().equals("addsnack")){
+		else if (event.getName().equals("load")){
+			Documents.load();
+		}
+		else if (event.getName().equals("removesauce"))
+		{
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
+			if (doc.removeSauces(event.getOption("name").getAsString()))
+				event.reply("supprimé !").setEphemeral(true).queue();
+			else
+				event.reply(event.getOption("name").getAsString() + " n'existe pas !").setEphemeral(true).queue();
+		}
+		else if (event.getName().equals("removeingredient"))
+		{
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
+			if (doc.removeIngredients(event.getOption("name").getAsString()))
+				event.reply("supprimé !").setEphemeral(true).queue();
+			else
+				event.reply(event.getOption("name").getAsString() + " n'existe pas !").setEphemeral(true).queue();
+		}
+		else if (event.getName().equals("removesnack"))
+		{
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
+			if (doc.removeSnack(event.getOption("name").getAsString()))
+				event.reply("supprimé !").setEphemeral(true).queue();
+			else
+				event.reply(event.getOption("name").getAsString() + " n'existe pas !").setEphemeral(true).queue();
+		}
+		else if (event.getName().equals("removemeal"))
+		{
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
+			if (doc.removeMeals(event.getOption("name").getAsString()))
+				event.reply("supprimé !").setEphemeral(true).queue();
+			else
+				event.reply(event.getOption("name").getAsString() + " n'existe pas !").setEphemeral(true).queue();
+		}
+		else if (event.getName().equals("removeboisson"))
+		{
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
+			if (doc.removeBoisson(event.getOption("name").getAsString()))
+				event.reply("supprimé !").setEphemeral(true).queue();
+			else
+				event.reply(event.getOption("name").getAsString() + " n'existe pas !").setEphemeral(true).queue();
+		}
+		else if (event.getName().equals("addingredient"))
+		{
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
+			if (doc.addIngredients(event.getOption("name").getAsString()))
+				event.reply(event.getOption("name").getAsString() + "ajouté !").queue();
+			else
+				event.reply(event.getOption("name").getAsString() + "déjà ajouté !").queue();
+		}
+		else if (event.getName().equals("addsauce"))
+		{
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
+			if (doc.addSauces(event.getOption("name").getAsString()))
+				event.reply(event.getOption("name").getAsString() + "ajouté !").queue();
+			else
+				event.reply(event.getOption("name").getAsString() + "déjà ajouté !").queue();
+		}
+		else if (event.getName().equals("addmeal")) {
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
+			Double price = event.getOption("prix").getAsDouble();
+			Double ADHprice = event.getOption("adhprix").getAsDouble();
+			if (doc.addMeals(event.getOption("name").getAsString(), price, ADHprice, event.getOption("asingredient").getAsBoolean()))
+				event.reply("plat ajouté").queue();
+			else
+				event.reply("plat déjà ajouté").queue();
+		}
+		else if (event.getName().equals("addboisson")){
 			if (!isBartender(event.getMember()))
 				event.reply("vous n'avez pas les droits").queue();
 			Double price = event.getOption("prix").getAsDouble();
 			Double ADHprice = event.getOption("adhprix").getAsDouble();
+			if (Documents.doc.addBoisson(event.getOption("name").getAsString(),price, ADHprice))
+				event.reply("la boisson " + event.getOption("name").getAsString() + " ajouté").queue();
+			else
+				event.reply("la boisson déja définis").queue();
+		}
+		else if (event.getName().equals("addsnack")){
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
+			Double price = event.getOption("prix").getAsDouble();
+			Double ADHprice = event.getOption("adhprix").getAsDouble();
 			if (Documents.doc.addSnack(event.getOption("name").getAsString(),price, ADHprice))
-				event.reply("le dessert " + event.getOption("name").getAsString()).queue();
+				event.reply("le dessert " + event.getOption("name").getAsString() + " ajouté").queue();
 			else
 				event.reply("dessert déja définis").queue();
 		}
 		else if (event.getName().equals("setannouncechannel"))
 		{
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
 			Documents.doc.setChannelAnnounceId(event.getGuild().getTextChannelsByName(event.getOption("channel").getAsString(), false).get(0).getId());
 			Documents.doc.setServId(event.getGuild().getId());
 			event.reply("channel d'annonce définis avec succès").queue();
 		}
 		else if (event.getName().equals("setcommandschannel"))
 		{
+			if (!isBartender(event.getMember())){
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
 			Documents.doc.setCommandsChannelId(event.getGuild().getTextChannelsByName(event.getOption("channel").getAsString(), false).get(0).getId());
 			Documents.doc.setServId(event.getGuild().getId());
 			event.reply("channel de commande définis avec succès").queue();
@@ -412,6 +508,7 @@ public class BotListener implements EventListener {
 				activity act = new activity("le foyer est fermé !", null, Activity.ActivityType.WATCHING);
 				event.getJDA().getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, act);
 				isopen = !isopen;
+				event.reply("done !").setEphemeral(true).queue();
 			}
 		}
 	}
