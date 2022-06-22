@@ -341,8 +341,15 @@ public class BotListener implements EventListener {
 				.addOption(OptionType.NUMBER,"prix", "prix du snack", true)
 				.addOption(OptionType.NUMBER, "adhprix", "prix pour les adhérents", true)
 				.queue();
+
+		event.getJDA().upsertCommand("removesnack", "ajoute un snack")
+				.addOption(OptionType.STRING,"name", "nom du snack", true)
+				.queue();
 		event.getJDA().upsertCommand("setannouncechannel", "définir le channel d'annonce")
 				.addOption(OptionType.STRING, "channel", "salon", true, true).queue();
+		event.getJDA().upsertCommand("setcommandschannel", "définir le channel des commqndes")
+				.addOption(OptionType.STRING, "channel", "salon", true, true).queue();
+
 	}
 
 	private void onSlash(SlashCommandInteraction event) {
