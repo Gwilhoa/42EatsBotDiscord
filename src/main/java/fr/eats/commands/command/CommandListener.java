@@ -10,10 +10,8 @@ import fr.eats.commands.builder.CommandMap;
 import fr.eats.commands.objects.activity;
 import fr.eats.commands.objects.Documents;
 import net.dv8tion.jda.api.*;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.PrivateChannel;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
@@ -130,12 +128,21 @@ public class CommandListener {
 
 	@Command(name = "command", description = "passer commande", type = Command.ExecutorType.USER)
 	private void command(Message msg) {
+		command(msg.getMember(), msg.getTextChannel(), null);
+	}
+
+
+	public static void command(Member m, TextChannel tc, SlashCommandInteraction event){
 		if (!isopen)
 		{
-			msg.getChannel().sendMessage("le foyer est fermé").queue();
+			if (event == null)
+				tc.sendMessage("le foyer est fermé").queue();
+			else
+				event.reply("le foyer est fermé").queue();
 			return;
 		}
-		Member m = msg.getMember();
+		if (event != null)
+			event.reply("oui").complete().deleteOriginal().queue();
 		PrivateChannel pc = m.getUser().openPrivateChannel().complete();
 		EmbedBuilder eb = new EmbedBuilder().setTitle("passer commande").setColor(Color.ORANGE).setAuthor("bonjour " + m.getEffectiveName());
 		eb.setDescription("es-tu adhérent ?");

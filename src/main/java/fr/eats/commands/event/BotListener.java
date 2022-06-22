@@ -6,7 +6,7 @@
 /*   By: gchatain <gchatain@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/05 11:45:58 by gchatain          #+#    #+#             */
-/*   Updated: 2022/06/21 22:29:02 by                  ###   ########.fr       */
+/*   Updated: 2022/06/22 08:52:28 by                  ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializer;
 import fr.eats.commands.BotDiscord;
 import fr.eats.commands.builder.CommandMap;
+import fr.eats.commands.command.CommandListener;
 import fr.eats.commands.objects.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -43,6 +44,9 @@ import net.dv8tion.jda.internal.interactions.component.SelectMenuImpl;
 import java.awt.*;
 import java.io.File;
 import java.util.*;
+
+import static fr.eats.commands.objects.Documents.doc;
+import static fr.eats.commands.objects.Documents.isBartender;
 
 /**
  * capture tout les evenements du bot
@@ -329,6 +333,9 @@ public class BotListener implements EventListener {
 		activity act = new activity("le foyer est fermé !", null, Activity.ActivityType.WATCHING);
 		event.getJDA().getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, act);
 		event.getJDA().getGuilds().get(0).updateCommands().queue();
+		event.getJDA().upsertCommand("command", "passer commande").queue();
+		event.getJDA().upsertCommand("open", "ouvrir le foyer").queue();
+		event.getJDA().upsertCommand("close", "fermer le foyer").queue();
 		event.getJDA().upsertCommand("addsnack", "ajoute un snack")
 				.addOption(OptionType.STRING,"name", "nom du snack", true)
 				.addOption(OptionType.NUMBER,"prix", "prix du snack", true)
@@ -339,7 +346,12 @@ public class BotListener implements EventListener {
 	}
 
 	private void onSlash(SlashCommandInteraction event) {
-		if (event.getName().equals("addsnack")){
+		if (event.getName().equals("command")){
+			CommandListener.command(event.getMember(), event.getTextChannel(), event);
+		}
+		else if (event.getName().equals("addsnack")){
+			if (!isBartender(event.getMember()))
+				event.reply("vous n'avez pas les droits").queue();
 			Double price = event.getOption("prix").getAsDouble();
 			Double ADHprice = event.getOption("adhprix").getAsDouble();
 			if (Documents.doc.addSnack(event.getOption("name").getAsString(),price, ADHprice))
@@ -349,9 +361,51 @@ public class BotListener implements EventListener {
 		}
 		else if (event.getName().equals("setannouncechannel"))
 		{
-			Documents.doc.setCommandsChannelId(event.getGuild().getTextChannelsByName(event.getOption("channel").getAsString(), false).get(0).getId());
-			Documents.doc.setChannelAnnounceId(event.getGuild().getId());
+			Documents.doc.setChannelAnnounceId(event.getGuild().getTextChannelsByName(event.getOption("channel").getAsString(), false).get(0).getId());
+			Documents.doc.setServId(event.getGuild().getId());
 			event.reply("channel d'annonce définis avec succès").queue();
+		}
+		else if (event.getName().equals("setcommandschannel"))
+		{
+			Documents.doc.setCommandsChannelId(event.getGuild().getTextChannelsByName(event.getOption("channel").getAsString(), false).get(0).getId());
+			Documents.doc.setServId(event.getGuild().getId());
+			event.reply("channel de commande définis avec succès").queue();
+		}
+		else if (event.getName().equals("open")) {
+			if (!isBartender(event.getMember()))
+				event.reply("vous n'avez pas les droits").queue();
+			else if (isopen)
+				event.reply("le foyer est déjà ouvert").queue();
+			else if (!doc.getServId().equals(event.getGuild().getId()))
+				event.reply("vous n'etes pas sur le bon serveur ou le serveur est mal défini").queue();
+			else if (doc.getChannelAnnounceId() == null || event.getGuild().getTextChannelById(doc.getChannelAnnounceId()) == null)
+				event.reply("le salon d'annonce n'est pas définis").queue();
+			else if (doc.getCommandsChannelId() == null || event.getGuild().getTextChannelById(doc.getCommandsChannelId()) == null)
+				event.reply("le salon des commandes n'est pas définis").queue();
+			else {
+				event.getJDA().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ouvre ! :)").queue();
+				activity act = new activity("le foyer est ouvert !", null, Activity.ActivityType.WATCHING);
+				event.getJDA().getPresence().setPresence(OnlineStatus.ONLINE, act);
+				isopen = !isopen;
+				event.reply("done !").setEphemeral(true).queue();
+			}
+		}
+		else if (event.getName().equals("close")){
+			if (!isBartender(event.getMember()))
+				event.reply("vous n'avez pas les droits").queue();
+			else if (!isopen) {
+				event.reply("le foyer est déjà fermé").queue();
+			}
+			else {
+				event.reply("done !").setEphemeral(true).queue();
+				if (doc.getChannelAnnounceId() == null)
+					event.getChannel().sendMessage("le foyer ferme ! :(").queue();
+				else
+					event.getJDA().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ferme ! :(").queue();
+				activity act = new activity("le foyer est fermé !", null, Activity.ActivityType.WATCHING);
+				event.getJDA().getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, act);
+				isopen = !isopen;
+			}
 		}
 	}
 
