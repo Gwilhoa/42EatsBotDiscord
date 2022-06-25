@@ -6,7 +6,7 @@
 /*   By: gchatain <gchatain@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/05 11:45:58 by gchatain          #+#    #+#             */
-/*   Updated: 2022/06/22 23:10:00 by                  ###   ########.fr       */
+/*   Updated: 2022/06/25 09:58:33 by                  ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,11 +131,17 @@ public class BotListener implements EventListener {
 			if (event.getSelectedOptions().get(0).getValue().equals("back")) {
 				if (eb.getDescriptionBuilder().toString().charAt(eb.getDescriptionBuilder().toString().length() - 1) == ':'){
 					String[] list = eb.getDescriptionBuilder().toString().split("\n");
-					int i = 1;
-					eb.setDescription(list[0] + "\n");
-					while (i < list.length - 1) {
-						eb.appendDescription(list[i]).appendDescription("\n");
-						i++;
+					if (list.length == 1)
+					{
+						eb.setDescription("rien, que voulez vous ?");
+					}
+					else {
+						int i = 1;
+						eb.setDescription(list[0] + "\n");
+						while (i < list.length - 1) {
+							eb.appendDescription(list[i]).appendDescription("\n");
+							i++;
+						}
 					}
 					generatePrincipalMenu(msg, eb);
 				} else {
