@@ -348,6 +348,7 @@ public class BotListener implements EventListener {
 		}
 		else if (event.getName().equals("load")){
 			Documents.load();
+			event.reply("stocks rechargé").queue();
 		}
 		else if (event.getName().equals("removesauce"))
 		{
@@ -492,7 +493,7 @@ public class BotListener implements EventListener {
 			else if (doc.getCommandsChannelId() == null || event.getGuild().getTextChannelById(doc.getCommandsChannelId()) == null)
 				event.reply("le salon des commandes n'est pas définis").queue();
 			else {
-				event.getJDA().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ouvre ! :)").queue();
+				event.getJDA().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ouvre ! :)\nvous pouvez executer /commands ou >commands pour commander").queue();
 				activity act = new activity("le foyer est ouvert !", null, Activity.ActivityType.WATCHING);
 				event.getJDA().getPresence().setPresence(OnlineStatus.ONLINE, act);
 				isopen = !isopen;

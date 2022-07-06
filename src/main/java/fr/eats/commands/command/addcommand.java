@@ -16,6 +16,7 @@ public class addcommand {
 		if (!isBartender(msg.getMember()))
 			return;
 		Documents.load();
+		msg.getChannel().sendMessage("document rechargé avec succès").queue();
 	}
 
 	@Command(name = "setslash", description = "ajouter les commandes", type = Command.ExecutorType.USER)
@@ -24,7 +25,7 @@ public class addcommand {
 		if (!isBartender(msg.getMember()))
 			return;
 		jda.updateCommands().queue();
-		jda.upsertCommand("load", "passer commande").queue();
+		jda.upsertCommand("load", "recharger le fichier").queue();
 		jda.upsertCommand("command", "passer commande").queue();
 		jda.upsertCommand("open", "ouvrir le foyer").queue();
 		jda.upsertCommand("close", "fermer le foyer").queue();
