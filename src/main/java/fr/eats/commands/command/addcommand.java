@@ -125,6 +125,23 @@ public class addcommand {
 			msg.getChannel().sendMessage("mauvais format : trop ou pas assez d'argument \n>addmeal NOM PRIX PRIX_ADHERENCE").queue();
 	}
 
+	@Command(name = "addconflict", description = "ajouter des conflits d'ingredients", type = Command.ExecutorType.USER)
+private void addconflict(Message msg) {
+		if (!isBartender(msg.getMember()))
+			return;
+		String[] args = msg.getContentRaw().split(" ");
+		String name;
+		if (args.length == 3) {
+			name = args[1];
+			if (!doc.addConflict(name, args[2]))
+				msg.getChannel().sendMessage("conflit déjà définis").queue();
+			else
+				msg.getChannel().sendMessage("le conflit " + name + " est définis").queue();
+		}
+		else
+			msg.getChannel().sendMessage("mauvais format : trop ou pas assez d'argument \n>addconflict NOM_INGREDIENT NOM_INGREDIENT").queue();
+	}
+
 	@Command(name = "addsnack", description = "ajouter un dessert, un snack", type = Command.ExecutorType.USER)
 	private void addsnack(Message msg) {
 		if (!isBartender(msg.getMember()))

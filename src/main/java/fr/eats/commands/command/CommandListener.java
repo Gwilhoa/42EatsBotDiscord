@@ -7,6 +7,7 @@ package fr.eats.commands.command;
 import fr.eats.commands.BotDiscord;
 import fr.eats.commands.builder.Command;
 import fr.eats.commands.builder.CommandMap;
+import fr.eats.commands.event.BotListener;
 import fr.eats.commands.objects.activity;
 import fr.eats.commands.objects.Documents;
 import net.dv8tion.jda.api.*;
@@ -75,7 +76,7 @@ public class CommandListener {
 			msg.getChannel().sendMessage("le salon des commandes n'est pas définis").queue();
 			return;
 		}
-		botDiscord.getJda().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ouvre ! :)").queue();
+		botDiscord.getJda().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ouvre ! :)\ntu peux executer /command").queue();
 		activity act = new activity("le foyer est ouvert !", null, Activity.ActivityType.WATCHING);
 		jda.getPresence().setPresence(OnlineStatus.ONLINE, act);
 		isopen = !isopen;
@@ -89,13 +90,15 @@ public class CommandListener {
 			msg.getChannel().sendMessage("le foyer est déjà fermé").queue();
 			return;
 		}
-		if (doc.getChannelAnnounceId() == null)
+		if (doc.getChannelAnnounceId() == null) {
 			msg.getChannel().sendMessage("le foyer ferme ! :(").queue();
+		}
 		else
 			botDiscord.getJda().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ferme ! :(").queue();
 		activity act = new activity("le foyer est fermé !", null, Activity.ActivityType.WATCHING);
 		jda.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, act);
 		isopen = !isopen;
+		BotListener.timeclose = System.currentTimeMillis();
 	}
 
 	@Command(name = "setannouncechannel", description = "changer le channel d'annonce", type = Command.ExecutorType.USER)

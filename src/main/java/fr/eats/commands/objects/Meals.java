@@ -1,10 +1,12 @@
 package fr.eats.commands.objects;
 
+import java.util.ArrayList;
+
 public class Meals {
 	private Double Price;
 	private Double AdherencePrice;
 	private String name;
-	private boolean iswithingredient;
+	private final boolean iswithingredient;
 	private boolean available;
 
 	public Meals(Double price, Double adherencePrice, String name, boolean iswithingredient){

@@ -54,6 +54,7 @@ import static fr.eats.commands.objects.Documents.isBartender;
  */
 public class BotListener implements EventListener {
 
+	public static Long timeclose;
 	private final CommandMap commandMap;
 	private final BotDiscord bot;
 	public static boolean isopen = false;
@@ -118,12 +119,16 @@ public class BotListener implements EventListener {
 					eb.setFooter(me.getFooter().getText() + " (adhérent)");
 				else
 					eb.setFooter(me.getFooter().getText());
-				if (isopen) {
+				System.out.println(timeclose);
+				if (!isopen && timeclose + 300000L < System.currentTimeMillis()){
+					msg.getChannel().sendMessage("ta commande a été annulé, tu as pris trop de temps").queue();
+					msg.delete().queue();
+				}
+				else {
 					event.getJDA().getGuildById(Documents.doc.getServId()).getTextChannelById(Documents.doc.getCommandsChannelId()).sendMessageEmbeds(eb.build()).setActionRow(net.dv8tion.jda.api.interactions.components.buttons.Button.primary("finish", "terminé")).queue();
-					msg.getChannel().sendMessage("ta commande est partis en cuisine ! ").queue();
-				} else
-					msg.getChannel().sendMessage("le foyer est fermé").queue();
-				msg.delete().queue();
+					msg.getChannel().sendMessage("ta commande est parti en cuisine ! ").queue();
+					msg.delete().queue();
+				}
 			}
 		}
 		if (event.getComponent().getId().equals("ingredients")){
@@ -270,9 +275,9 @@ public class BotListener implements EventListener {
 		str = str.split(":")[str.split(":").length - 1];
 		ArrayList<String> ing = new ArrayList<>(Arrays.asList(str.split(" ")));
 		ArrayList<SelectOption> options = new ArrayList<>();
-		for (String ingredient : Documents.doc.getIngredients()) {
-			if (!ing.contains(ingredient))
-				options.add(new SelectOptionImpl(ingredient, ingredient));
+		for (Ingredients ingredient : Documents.doc.getIngredients()) {
+			if (!ing.contains(ingredient.getName()) && !ingredient.haveconflict(ing))
+				options.add(new SelectOptionImpl(ingredient.getName(), ingredient.getName()));
 		}
 		if (ing.isEmpty())
 			options.add(new SelectOptionImpl("annuler", "back"));
@@ -336,6 +341,7 @@ public class BotListener implements EventListener {
 		if (new File("42Eats/").mkdir())
 			System.out.println("creating directory");
 		System.out.println("le bot est lancé");
+		timeclose = 0L;
 		Documents.load();
 		activity act = new activity("le foyer est fermé !", null, Activity.ActivityType.WATCHING);
 		event.getJDA().getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, act);
@@ -441,7 +447,7 @@ public class BotListener implements EventListener {
 		}
 		else if (event.getName().equals("addboisson")){
 			if (!isBartender(event.getMember()))
-				event.reply("vous n'avez pas les droits").queue();
+				event.reply("vous n'avez pas les droits").setEphemeral(true);
 			Double price = event.getOption("prix").getAsDouble();
 			Double ADHprice = event.getOption("adhprix").getAsDouble();
 			if (Documents.doc.addBoisson(event.getOption("name").getAsString(),price, ADHprice))
@@ -493,7 +499,7 @@ public class BotListener implements EventListener {
 			else if (doc.getCommandsChannelId() == null || event.getGuild().getTextChannelById(doc.getCommandsChannelId()) == null)
 				event.reply("le salon des commandes n'est pas définis").queue();
 			else {
-				event.getJDA().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ouvre ! :)\nvous pouvez executer /commands ou >commands pour commander").queue();
+				event.getJDA().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ouvre ! :)\nvous pouvez executer /command ou >command pour commander").queue();
 				activity act = new activity("le foyer est ouvert !", null, Activity.ActivityType.WATCHING);
 				event.getJDA().getPresence().setPresence(OnlineStatus.ONLINE, act);
 				isopen = !isopen;
@@ -507,7 +513,6 @@ public class BotListener implements EventListener {
 				event.reply("le foyer est déjà fermé").queue();
 			}
 			else {
-				event.reply("done !").setEphemeral(true).queue();
 				if (doc.getChannelAnnounceId() == null)
 					event.getChannel().sendMessage("le foyer ferme ! :(").queue();
 				else
@@ -515,6 +520,7 @@ public class BotListener implements EventListener {
 				activity act = new activity("le foyer est fermé !", null, Activity.ActivityType.WATCHING);
 				event.getJDA().getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, act);
 				isopen = !isopen;
+				timeclose = System.currentTimeMillis();
 				event.reply("done !").setEphemeral(true).queue();
 			}
 		}

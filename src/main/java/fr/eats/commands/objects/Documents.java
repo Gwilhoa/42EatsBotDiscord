@@ -14,6 +14,7 @@ public class Documents {
 	private static final String file = "42Eats/Documents.json";
 	private static final TypeToken<Documents> type = new TypeToken<Documents>() {
 	};
+	private Long timeclose;
 	public static Documents doc;
 	private String ServId;
 	private String ChannelAnnounceId;
@@ -28,7 +29,7 @@ public class Documents {
 	private final HashMap<String, Meals> Meals;
 	private final HashMap<String, Snack> Snacks;
 	private final ArrayList<String> sauces;
-	private final ArrayList<String> ingredients;
+	private final ArrayList<Ingredients> ingredients;
 	public Documents() {
 		this.ServId = "700778044943499265";
 		this.RoleId = "899795349902852126";
@@ -39,6 +40,37 @@ public class Documents {
 		this.Snacks = new HashMap<>();
 		this.sauces = new ArrayList<>();
 		this.ingredients = new ArrayList<>();
+		this.timeclose = 0L;
+	}
+
+	public Long getTimeclose() {
+		return timeclose;
+	}
+
+	public void setTimeclose() {
+		this.timeclose = System.currentTimeMillis();
+	}
+
+	public boolean addConflict(String name, String conflict){
+		int ic = 0;
+		for (Ingredients i : ingredients) {
+			if (i.getName().equals(name) || i.getName().equals(conflict)) {
+				ic++;
+			}
+		}
+		if (ic != 2) {
+			return false;
+		}
+		for (Ingredients i : this.getIngredients()) {
+			if (i.getName().equals(name)) {
+				i.addConflict(conflict);
+			}
+			else if (i.getName().equals(conflict)) {
+				i.addConflict(name);
+			}
+			save();
+		}
+		return true;
 	}
 
 	public List<Boisson> getAllboisson() {
@@ -64,7 +96,7 @@ public class Documents {
 		return sauces;
 	}
 
-	public ArrayList<String> getIngredients() {
+	public ArrayList<Ingredients> getIngredients() {
 		return ingredients;
 	}
 
@@ -84,9 +116,11 @@ public class Documents {
 	}
 
 	public boolean addIngredients(String str){
-		if (this.ingredients.contains(str))
-			return false;
-		this.ingredients.add(str);
+		for (Ingredients ingredient : this.ingredients) {
+			if (ingredient.getName().equals(str))
+				return false;
+		}
+		this.ingredients.add(new Ingredients(str));
 		save();
 		return true;
 	}
