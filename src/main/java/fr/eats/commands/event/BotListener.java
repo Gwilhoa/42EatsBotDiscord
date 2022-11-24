@@ -23,10 +23,7 @@ import fr.eats.commands.command.CommandListener;
 import fr.eats.commands.objects.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -473,7 +470,7 @@ public class BotListener implements EventListener {
 				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
 				return;
 			}
-			Documents.doc.setChannelAnnounceId(event.getGuild().getTextChannelsByName(event.getOption("channel").getAsString(), false).get(0).getId());
+			Documents.doc.setChannelAnnounceId(event.getGuild().getNewsChannelsByName(event.getOption("channel").getAsString(), false).get(0).getId());
 			Documents.doc.setServId(event.getGuild().getId());
 			event.reply("channel d'annonce définis avec succès").queue();
 		}
@@ -494,12 +491,12 @@ public class BotListener implements EventListener {
 				event.reply("le foyer est déjà ouvert").queue();
 			else if (!doc.getServId().equals(event.getGuild().getId()))
 				event.reply("vous n'etes pas sur le bon serveur ou le serveur est mal défini").queue();
-			else if (doc.getChannelAnnounceId() == null || event.getGuild().getTextChannelById(doc.getChannelAnnounceId()) == null)
+			else if (doc.getChannelAnnounceId() == null || event.getGuild().getNewsChannelById(doc.getChannelAnnounceId()) == null)
 				event.reply("le salon d'annonce n'est pas définis").queue();
 			else if (doc.getCommandsChannelId() == null || event.getGuild().getTextChannelById(doc.getCommandsChannelId()) == null)
 				event.reply("le salon des commandes n'est pas définis").queue();
 			else {
-				event.getJDA().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ouvre ! :)\nvous pouvez executer /command ou >command pour commander").queue();
+				event.getJDA().getGuildById(doc.getServId()).getNewsChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ouvre ! :)\nvous pouvez executer /command ou >command pour commander").queue();
 				activity act = new activity("le foyer est ouvert !", null, Activity.ActivityType.WATCHING);
 				event.getJDA().getPresence().setPresence(OnlineStatus.ONLINE, act);
 				isopen = !isopen;
@@ -529,8 +526,12 @@ public class BotListener implements EventListener {
 	private void completeCommand(CommandAutoCompleteInteraction event) {
 		if (event.getOptions().get(0).getName().equals("channel")) {
 			ArrayList<String> ar = new ArrayList<>();
-			for (TextChannel ch : event.getGuild().getTextChannels())
+			for (NewsChannel ch : event.getGuild().getNewsChannels()) {
 				ar.add(ch.getName());
+			}
+			for (TextChannel ch : event.getGuild().getTextChannels()) {
+				ar.add(ch.getName());
+			}
 			event.replyChoiceStrings(ar).queue();
 		}
 	}
