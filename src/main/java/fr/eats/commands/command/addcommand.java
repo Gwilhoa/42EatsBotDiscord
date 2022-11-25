@@ -71,9 +71,11 @@ public class addcommand {
 				.queue();
 
 		jda.upsertCommand("setannouncechannel", "définir le channel d'annonce")
-				.addOption(OptionType.STRING, "channel", "salon", true, true).queue();
+				.addOption(OptionType.STRING, "newschannel", "salon", true, true).queue();
 		jda.upsertCommand("setcommandschannel", "définir le channel des commqndes")
 				.addOption(OptionType.STRING, "channel", "salon", true, true).queue();
+		jda.upsertCommand("setrole", "définir le role bartender")
+				.addOption(OptionType.ROLE, "roles", "role a definir", true).queue();
 	}
 	@Command(name = "addboisson", description = "ajouter une boisson", type = Command.ExecutorType.USER)
 	private void addboisson(Message msg) {

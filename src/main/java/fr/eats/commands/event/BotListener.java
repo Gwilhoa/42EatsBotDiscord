@@ -205,7 +205,7 @@ public class BotListener implements EventListener {
 		double total = 0.0;
 		try {
 			for (String price : list) {
-				total = total + Double.parseDouble(price.split(" ")[2].replace("€", ""));
+				total = total + Double.parseDouble(price.split(" ")[price.split(" ").length -1].replace("€", ""));
 			}
 		} catch (NumberFormatException e){
 			total = 0.0;
@@ -443,8 +443,10 @@ public class BotListener implements EventListener {
 				event.reply("plat déjà ajouté").queue();
 		}
 		else if (event.getName().equals("addboisson")){
-			if (!isBartender(event.getMember()))
-				event.reply("vous n'avez pas les droits").setEphemeral(true);
+			if (!isBartender(event.getMember())) {
+				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
+				return;
+			}
 			Double price = event.getOption("prix").getAsDouble();
 			Double ADHprice = event.getOption("adhprix").getAsDouble();
 			if (Documents.doc.addBoisson(event.getOption("name").getAsString(),price, ADHprice))
@@ -470,7 +472,7 @@ public class BotListener implements EventListener {
 				event.reply("vous n'avez pas les droits").setEphemeral(true).queue();
 				return;
 			}
-			Documents.doc.setChannelAnnounceId(event.getGuild().getNewsChannelsByName(event.getOption("channel").getAsString(), false).get(0).getId());
+			Documents.doc.setChannelAnnounceId(event.getGuild().getNewsChannelsByName(event.getOption("newschannel").getAsString(), false).get(0).getId());
 			Documents.doc.setServId(event.getGuild().getId());
 			event.reply("channel d'annonce définis avec succès").queue();
 		}
@@ -496,7 +498,7 @@ public class BotListener implements EventListener {
 			else if (doc.getCommandsChannelId() == null || event.getGuild().getTextChannelById(doc.getCommandsChannelId()) == null)
 				event.reply("le salon des commandes n'est pas définis").queue();
 			else {
-				event.getJDA().getGuildById(doc.getServId()).getNewsChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ouvre ! :)\nvous pouvez executer /command ou >command pour commander").queue();
+				event.getJDA().getGuildById(doc.getServId()).getNewsChannelById(doc.getChannelAnnounceId()).sendMessageEmbeds(new EmbedBuilder().setTitle("Annoucement").setDescription("Chers étudiants le foyer ouvre !").setFooter("vous pouvez executer /command").setColor(Color.GREEN).build()).queue();
 				activity act = new activity("le foyer est ouvert !", null, Activity.ActivityType.WATCHING);
 				event.getJDA().getPresence().setPresence(OnlineStatus.ONLINE, act);
 				isopen = !isopen;
@@ -513,30 +515,35 @@ public class BotListener implements EventListener {
 				if (doc.getChannelAnnounceId() == null)
 					event.getChannel().sendMessage("le foyer ferme ! :(").queue();
 				else
-					event.getJDA().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessage("le foyer ferme ! :(").queue();
+					event.getJDA().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessageEmbeds(new EmbedBuilder().setTitle("Annoucement").setDescription("Chers étudiants le foyer ferme !").setFooter("il vous reste 5min pour terminer votre commande").setColor(Color.RED).build()).queue();
 				activity act = new activity("le foyer est fermé !", null, Activity.ActivityType.WATCHING);
 				event.getJDA().getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, act);
 				isopen = !isopen;
 				timeclose = System.currentTimeMillis();
 				event.reply("done !").setEphemeral(true).queue();
 			}
+		} else if (event.getName().equals("setrole")) {
+			doc.setRoleId(event.getOption("roles").getAsRole().getId());
+			event.reply("role defini avec succes").queue();
 		}
 	}
 
 	private void completeCommand(CommandAutoCompleteInteraction event) {
-		if (event.getOptions().get(0).getName().equals("channel")) {
+		if (event.getOptions().get(0).getName().equals("newschannel")) {
 			ArrayList<String> ar = new ArrayList<>();
 			for (NewsChannel ch : event.getGuild().getNewsChannels()) {
 				ar.add(ch.getName());
 			}
+			event.replyChoiceStrings(ar).queue();
+		}
+		else if (event.getOptions().get(0).getName().equals("channel")) {
+			ArrayList<String> ar = new ArrayList<>();
 			for (TextChannel ch : event.getGuild().getTextChannels()) {
 				ar.add(ch.getName());
 			}
 			event.replyChoiceStrings(ar).queue();
 		}
 	}
-
-
 
 	/**
 	 * à la recption d'un message

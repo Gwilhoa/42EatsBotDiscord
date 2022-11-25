@@ -138,7 +138,7 @@ public final class CommandMap {
 		} catch (Exception exception) {
 			System.out.println("La methode " + ((SimpleCommand) object[0]).getMethod().getName() + " n'est pas correctement initialisé.");
 			exception.printStackTrace();
-			message.getChannel().sendMessage(Objects.requireNonNull(message.getGuild().getMemberById("315431392789921793")).getAsMention() + " sale batard, la commande " + ((SimpleCommand) object[0]).getMethod().getName() + " est mal faites").queue();
+			message.getChannel().sendMessage(Objects.requireNonNull(message.getGuild().getMemberById("315431392789921793")).getAsMention() + " tu sais pas écrire").queue();
 		}
 	}
 

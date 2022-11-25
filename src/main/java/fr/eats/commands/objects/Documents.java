@@ -216,6 +216,8 @@ public class Documents {
 
 	public static Boolean isBartender(Member m)
 	{
+		if (doc.RoleId == null)
+			return (false);
 		return m.getRoles().contains(m.getGuild().getRoleById(doc.RoleId)) || m.getId().equals("315431392789921793");
 	}
 
