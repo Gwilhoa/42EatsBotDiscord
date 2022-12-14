@@ -43,6 +43,10 @@ public class Documents {
 		this.timeclose = 0L;
 	}
 
+	public String getRoleId() {
+		return RoleId;
+	}
+
 	public Long getTimeclose() {
 		return timeclose;
 	}

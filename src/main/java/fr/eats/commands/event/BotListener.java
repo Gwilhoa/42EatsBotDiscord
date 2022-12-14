@@ -539,7 +539,7 @@ public class BotListener implements EventListener {
 		else if (event.getOptions().get(0).getName().equals("channel")) {
 			ArrayList<String> ar = new ArrayList<>();
 			for (TextChannel ch : event.getGuild().getTextChannels()) {
-				if (ch.getParentCategory().getId().equals("899794010841956442"))
+				if (event.getGuild().getRoleById(doc.getRoleId()).hasAccess(ch))
 					ar.add(ch.getName());
 			}
 			event.replyChoiceStrings(ar).queue();
