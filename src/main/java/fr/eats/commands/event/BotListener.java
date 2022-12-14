@@ -515,7 +515,7 @@ public class BotListener implements EventListener {
 				if (doc.getChannelAnnounceId() == null)
 					event.getChannel().sendMessage("le foyer ferme ! :(").queue();
 				else
-					event.getJDA().getGuildById(doc.getServId()).getTextChannelById(doc.getChannelAnnounceId()).sendMessageEmbeds(new EmbedBuilder().setTitle("Annoucement").setDescription("Chers étudiants le foyer ferme !").setFooter("il vous reste 5min pour terminer votre commande").setColor(Color.RED).build()).queue();
+					event.getJDA().getGuildById(doc.getServId()).getNewsChannelById(doc.getChannelAnnounceId()).sendMessageEmbeds(new EmbedBuilder().setTitle("Annoucement").setDescription("Chers étudiants le foyer ferme !").setFooter("il vous reste 5min pour terminer votre commande").setColor(Color.RED).build()).queue();
 				activity act = new activity("le foyer est fermé !", null, Activity.ActivityType.WATCHING);
 				event.getJDA().getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, act);
 				isopen = !isopen;
@@ -539,7 +539,8 @@ public class BotListener implements EventListener {
 		else if (event.getOptions().get(0).getName().equals("channel")) {
 			ArrayList<String> ar = new ArrayList<>();
 			for (TextChannel ch : event.getGuild().getTextChannels()) {
-				ar.add(ch.getName());
+				if (ch.getParentCategory().getId().equals("899794010841956442"))
+					ar.add(ch.getName());
 			}
 			event.replyChoiceStrings(ar).queue();
 		}
