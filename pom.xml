@@ -7,8 +7,6 @@
     <groupId>org.example</groupId>
     <artifactId>42eats</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>42eat</name>
-
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
@@ -28,6 +26,7 @@
     </dependencies>
 
     <build>
+        <finalName>42eats</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
