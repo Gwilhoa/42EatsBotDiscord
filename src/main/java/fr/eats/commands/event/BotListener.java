@@ -205,7 +205,9 @@ public class BotListener implements EventListener {
 		double total = 0.0;
 		try {
 			for (String price : list) {
-				total = total + Double.parseDouble(price.split(" ")[price.split(" ").length -1].replace("€", ""));
+				if (price.split(":").length > 1) {
+					total = total + Double.parseDouble(price.split(":")[1].split(" ")[1].replace("€", ""));
+				}
 			}
 		} catch (NumberFormatException e){
 			total = 0.0;
